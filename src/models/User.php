@@ -4,10 +4,12 @@ namespace yiisolutions\user\models;
 
 use Yii;
 use yii\base\ModelEvent;
+use yii\base\NotSupportedException;
 use yii\behaviors\AttributeBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\db\Expression;
+use yii\web\IdentityInterface;
 
 /**
  * This is the model class for table "user".
@@ -22,7 +24,7 @@ use yii\db\Expression;
  * @property integer $created_at
  * @property integer $updated_at
  */
-class User extends ActiveRecord
+class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_NEW = 'NEW';
     const STATUS_ACTIVATED = 'ACTIVATED';
@@ -117,5 +119,57 @@ class User extends ActiveRecord
     public static function generateAuthKey()
     {
         return Yii::$app->security->generateRandomString();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function findIdentity($id)
+    {
+        return static::findOne([
+            'id' => $id,
+            'status' => static::STATUS_ACTIVATED,
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAuthKey()
+    {
+        return $this->auth_key;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateAuthKey($authKey)
+    {
+        return $this->getAuthKey() === $authKey;
+    }
+
+    /**
+     * @param $password
+     * @return bool
+     */
+    public function validatePassword($password)
+    {
+        return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
 }
