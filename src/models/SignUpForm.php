@@ -2,6 +2,7 @@
 
 namespace yiisolutions\user\models;
 
+use Yii;
 use yii\base\Model;
 
 class SignUpForm extends Model implements SignUpFormInterface
@@ -37,6 +38,15 @@ class SignUpForm extends Model implements SignUpFormInterface
      */
     public function signUp()
     {
+        $user = new User();
+        $user->username = $this->username;
+        $user->email = $this->email;
+        $user->password = $this->password;
 
+        if (!$user->save()) {
+            return false;
+        }
+
+        return true;
     }
 }

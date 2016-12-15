@@ -47,10 +47,10 @@ class LoginAction extends Action
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             if ($model->login()) {
                 if ($this->successCallback instanceof \Closure) {
-                    return $this->successCallback->__invoke([$this, $model]);
+                    return $this->successCallback->__invoke($this, $model);
                 }
 
-                return $this->controller->goBack(Yii::$app->defaultRoute);
+                return $this->controller->goBack();
             }
         }
 
