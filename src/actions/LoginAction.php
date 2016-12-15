@@ -10,9 +10,9 @@ use yiisolutions\user\models\LoginFormInterface;
 
 class LoginAction extends Action
 {
-    public $modelClassName = 'yiisolutions\user\models\LoginForm';
+    public $modelClass = 'yiisolutions\user\models\LoginForm';
 
-    public $viewName = '@yiisolutions/user/views/login';
+    public $view = '@yiisolutions/user/views/login';
 
     /**
      * @var \Closure
@@ -23,20 +23,20 @@ class LoginAction extends Action
     {
         parent::init();
 
-        if (empty($this->modelClassName)) {
+        if (empty($this->modelClass)) {
             throw new InvalidConfigException("Model class name not specified");
         }
 
-        if (!class_exists($this->modelClassName)) {
-            throw new InvalidConfigException("Model class {$this->modelClassName} not found");
+        if (!class_exists($this->modelClass)) {
+            throw new InvalidConfigException("Model class {$this->modelClass} not found");
         }
 
-        if (!in_array(LoginFormInterface::class, class_implements($this->modelClassName))) {
-            throw new InvalidConfigException("Model class {$this->modelClassName} not implement interface " . LoginFormInterface::class);
+        if (!in_array(LoginFormInterface::class, class_implements($this->modelClass))) {
+            throw new InvalidConfigException("Model class {$this->modelClass} not implement interface " . LoginFormInterface::class);
         }
 
-        if (!in_array(Model::class, class_parents($this->modelClassName))) {
-            throw new InvalidConfigException("Model class {$this->modelClassName} not extend standard model class");
+        if (!in_array(Model::class, class_parents($this->modelClass))) {
+            throw new InvalidConfigException("Model class {$this->modelClass} not extend standard model class");
         }
     }
 
@@ -54,7 +54,7 @@ class LoginAction extends Action
             }
         }
 
-        return $this->controller->render($this->viewName, [
+        return $this->controller->render($this->view, [
             'model' => $model,
         ]);
     }
@@ -64,7 +64,7 @@ class LoginAction extends Action
      */
     private function getModel()
     {
-        $modelClassName = $this->modelClassName;
+        $modelClassName = $this->modelClass;
         return new $modelClassName();
     }
 }

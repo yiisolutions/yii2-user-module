@@ -9,9 +9,9 @@ use yiisolutions\user\models\SignUpFormInterface;
 
 class SignUpAction extends Action
 {
-    public $modelClassName = 'yiisolutions\user\models\SignUpForm';
+    public $modelClass = 'yiisolutions\user\models\SignUpForm';
 
-    public $viewName = '@yiisolutions/user/views/sign-up';
+    public $view = '@yiisolutions/user/views/sign-up';
 
     /**
      * @var \Closure
@@ -32,7 +32,7 @@ class SignUpAction extends Action
             return $this->controller->goBack();
         }
 
-        return $this->controller->render($this->viewName, [
+        return $this->controller->render($this->view, [
             'model' => $model,
         ]);
     }
@@ -42,7 +42,7 @@ class SignUpAction extends Action
      */
     private function getModel()
     {
-        $modelClassName = $this->modelClassName;
+        $modelClassName = $this->modelClass;
         return new $modelClassName();
     }
 }
