@@ -22,10 +22,10 @@ class SignUpForm extends Model implements SignUpFormInterface
             [['email'], 'email'],
             [['username'], 'unique', 'targetClass' => User::class, 'targetAttribute' => 'username', 'filter' => [
                 'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
-            ],
+            ]],
             [['email'], 'unique', 'targetClass' => User::class, 'targetAttribute' => 'email', 'filter' => [
                 'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
-            ]]],
+            ]],
             [['password'], 'compare'],
         ];
     }

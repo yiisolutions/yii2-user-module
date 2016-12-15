@@ -23,6 +23,7 @@ use yii\web\IdentityInterface;
  * @property string $status
  * @property integer $created_at
  * @property integer $updated_at
+ * @property string $password
  */
 class User extends ActiveRecord implements IdentityInterface
 {
@@ -36,7 +37,9 @@ class User extends ActiveRecord implements IdentityInterface
         self::STATUS_DELETED,
     ];
 
-    public $password_raw;
+    const SCENARIO_COMMAND_CREATE = 'commandCreate';
+
+    private $_password;
 
     /**
      * @inheritdoc
@@ -53,12 +56,20 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             [['username', 'auth_key', 'password_hash', 'email'], 'required'],
-            [['created_at', 'updated_at'], 'integer'],
             [['username', 'password_hash', 'password_reset_token', 'email'], 'string', 'max' => 255],
             [['auth_key', 'status'], 'string', 'max' => 32],
             [['auth_key'], 'unique'],
             [['password_reset_token'], 'unique'],
             [['status'], 'in', 'range' => self::STATUS_ALL],
+            [['email'], 'email'],
+            [['username'], 'unique', 'filter' => [
+                'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
+            ]],
+            [['email'], 'unique', 'filter' => [
+                'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
+            ]],
+            [['password'], 'required', 'on' => self::SCENARIO_COMMAND_CREATE],
+            [['password'], 'string', 'min' => 6, 'on' => self::SCENARIO_COMMAND_CREATE],
         ];
     }
 
@@ -97,9 +108,10 @@ class User extends ActiveRecord implements IdentityInterface
                 ],
                 'value' => function(ModelEvent $modelEvent) {
                     if (empty($modelEvent->sender->auth_key)) {
-                        $modelEvent->sender->auth_key = self::generateAuthKey();
+                        return self::generateAuthKey();
                     }
-                }
+                    return $modelEvent->sender->auth_key;
+                },
             ],
         ];
     }
@@ -137,17 +149,17 @@ class User extends ActiveRecord implements IdentityInterface
      *
      * @param $username
      *
-     * @return User
+     * @return User|ActiveRecord
      */
     public static function findIdentityByUsername($username)
     {
-        return static::findOne(['and',
-            ['or',
+        return static::find()
+            ->andWhere(['or',
                 ['username' => $username],
                 ['email' => $username],
-            ],
-            'status' => static::STATUS_ACTIVATED,
-        ]);
+            ])->andWhere([
+                'status' => static::STATUS_ACTIVATED,
+            ])->one();
     }
 
     /**
@@ -189,5 +201,16 @@ class User extends ActiveRecord implements IdentityInterface
     public function validatePassword($password)
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
+    }
+
+    public function getPassword()
+    {
+        return $this->_password;
+    }
+
+    public function setPassword($password)
+    {
+        $this->_password = $password;
+        $this->password_hash = self::generatePasswordHash($password);
     }
 }

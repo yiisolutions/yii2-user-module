@@ -10,7 +10,7 @@ use yiisolutions\user\models\LoginFormInterface;
 
 class LoginAction extends Action
 {
-    public $modelClassName = 'yiisolutions/user/models/LoginForm';
+    public $modelClassName = 'yiisolutions\user\models\LoginForm';
 
     public $viewName = '@yiisolutions/user/views/login';
 
@@ -35,7 +35,7 @@ class LoginAction extends Action
             throw new InvalidConfigException("Model class {$this->modelClassName} not implement interface " . LoginFormInterface::class);
         }
 
-        if (!in_array(Model::class, class_implements($this->modelClassName))) {
+        if (!in_array(Model::class, class_parents($this->modelClassName))) {
             throw new InvalidConfigException("Model class {$this->modelClassName} not extend standard model class");
         }
     }
