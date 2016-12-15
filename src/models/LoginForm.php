@@ -64,6 +64,10 @@ class LoginForm extends Model implements LoginFormInterface
      */
     public function login()
     {
+        if (!$this->validate()) {
+            return false;
+        }
+
         return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me ? $this->getModule()->rememberMeDuration : 0);
     }
 
