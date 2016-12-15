@@ -33,11 +33,6 @@ class Module extends BaseModule
     public $controllerNamespace = 'yiisolutions\user\controllers';
 
     /**
-     * @var int user login remember me duration.
-     */
-    public $rememberMeDuration = 3600 * 24 * 30;
-
-    /**
      * @inheritdoc
      */
     public function init()

@@ -16,7 +16,8 @@ interface LoginFormInterface
     /**
      * This method execute login process and return success of operation.
      *
-     * @return boolean
+     * @param array $options
+     * @return bool
      */
-    public function login();
+    public function login(array $options = []);
 }

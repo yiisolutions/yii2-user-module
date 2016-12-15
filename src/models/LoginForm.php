@@ -58,34 +58,16 @@ class LoginForm extends Model implements LoginFormInterface
     }
 
     /**
-     * This method execute login process and return success of operation.
-     *
-     * @return boolean
+     * @inheritdoc
      */
-    public function login()
+    public function login(array $options = [])
     {
         if (!$this->validate()) {
             return false;
         }
 
-        return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me ? $this->getModule()->rememberMeDuration : 0);
-    }
+        $rememberMeDuration = isset($options['rememberMeDuration']) ? $options['rememberMeDuration'] : 3600 * 24 * 30;
 
-    /**
-     * @return null|Module
-     * @throws InvalidConfigException
-     */
-    private function getModule()
-    {
-        // FIXME: find module if not loaded
-        foreach (Yii::$app->modules as $id => $module) {
-            if ((isset($module['class']) && ($module['class'] == Module::class))
-                || (is_string($module) && ($module == Module::class))
-            ) {
-                return Yii::$app->getModule($id);
-            }
-        }
-
-        throw new InvalidConfigException('Module ' . Module::class . ' disabled');
+        return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me  ? $rememberMeDuration : 0);
     }
 }
