@@ -10,7 +10,7 @@ use yiisolutions\user\models\LoginFormInterface;
 
 class LoginAction extends Action
 {
-    public $modelClassName = '@yiisolutions/user/models/LoginForm';
+    public $modelClassName = 'yiisolutions/user/models/LoginForm';
 
     public $viewName = '@yiisolutions/user/views/login';
 
