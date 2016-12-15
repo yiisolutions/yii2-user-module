@@ -3,8 +3,10 @@
 namespace yiisolutions\user\models;
 
 use Yii;
+use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\IdentityInterface;
+use yiisolutions\user\Module;
 
 class LoginForm extends Model implements LoginFormInterface
 {
@@ -62,6 +64,24 @@ class LoginForm extends Model implements LoginFormInterface
      */
     public function login()
     {
-        return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me ? 3600 * 24 * 30 : 0);
+        return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me ? $this->getModule()->rememberMeDuration : 0);
+    }
+
+    /**
+     * @return null|Module
+     * @throws InvalidConfigException
+     */
+    private function getModule()
+    {
+        // FIXME: find module if not loaded
+        foreach (Yii::$app->modules as $id => $module) {
+            if ((isset($module['class']) && ($module['class'] == Module::class))
+                || (is_string($module) && ($module == Module::class))
+            ) {
+                return Yii::$app->getModule($id);
+            }
+        }
+
+        throw new InvalidConfigException('Module ' . Module::class . ' disabled');
     }
 }

@@ -6,9 +6,36 @@ use Yii;
 use yii\console\Application as ConsoleApplication;
 use yii\base\Module as BaseModule;
 
+/**
+ * Yii2 user module.
+ *
+ * To add this module, add configuration
+ *
+ * ```php
+ * <?php
+ *
+ * return [
+ *     'modules' => [
+ *         'user' => [
+ *             'class' => 'yiisolutions\user\Module',
+ *
+ *             // module options
+ *             'rememberMeDuration' => $params['rememberMeDuration'],
+ *         ],
+ *     ],
+ * ];
+ *
+ * ```
+ * @package yiisolutions\user
+ */
 class Module extends BaseModule
 {
     public $controllerNamespace = 'yiisolutions\user\controllers';
+
+    /**
+     * @var int user login remember me duration.
+     */
+    public $rememberMeDuration = 3600 * 24 * 30;
 
     /**
      * @inheritdoc
