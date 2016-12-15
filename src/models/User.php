@@ -65,6 +65,7 @@ class User extends ActiveRecord implements IdentityInterface
             [['username'], 'unique', 'filter' => [
                 'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
             ]],
+            [['username'], 'match', 'pattern' => '/^[a-z][a-z0-9_\-.]*$/i'],
             [['email'], 'unique', 'filter' => [
                 'status' => [User::STATUS_ACTIVATED, User::STATUS_NEW],
             ]],
