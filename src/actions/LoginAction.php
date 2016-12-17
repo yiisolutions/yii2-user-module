@@ -67,7 +67,10 @@ class LoginAction extends Action
 
         if ($model->load($data)) {
             if ($model->login(['rememberMeDuration' => $this->rememberMeDuration])) {
-                $this->triggerModelEvent(self::EVENT_LOGIN_SUCCESS, $model);
+                $return = $this->triggerModelEvent(self::EVENT_LOGIN_SUCCESS, $model);
+                if ($return !== null) {
+                    return $return;
+                }
 
                 return $this->controller->goBack();
             }
@@ -93,11 +96,14 @@ class LoginAction extends Action
     /**
      * @param $eventName
      * @param LoginFormInterface $model
+     * @return mixed
      */
     private function triggerModelEvent($eventName, LoginFormInterface $model)
     {
         $event = new LoginEvent();
         $event->model = $model;
         $this->trigger($eventName, $event);
+
+        return $event->return;
     }
 }

@@ -68,7 +68,9 @@ For enable these actions use controller `actions()` method
 
 namespace app\controllers;
 
+use Yii;
 use yii\web\Controller;
+use yii\web\IdentityInterface;
 use yiisolutions\user\actions\LoginAction;
 use yiisolutions\user\actions\LogoutAction;
 use yiisolutions\user\actions\SignUpAction;
@@ -97,14 +99,15 @@ class AccountController extends Controller
     
     /**
      * Run when login success.
-     * 
-     * @return mixed This value will be returned from LoginAction
      */
     public function onLoginSuccess(LoginEvent $event, LoginFormInterface $model)
     {
         // do something ...
+        $username = $model->getUserIdentity()->username;
+        Yii::info("User '{$username}' logged in");
         
-        return $this->redirect('/profile');
+        // override default action return value
+        $event->return = $this->redirect('/profile');
     }
     
     /**
@@ -113,6 +116,12 @@ class AccountController extends Controller
     public function onLoginFailed(LoginEvent $event, LoginFormInterface $model)
     {
         // do something ...
+        $user = $model->getUserIdentity();
+        if ($user instanceof IdentityInterface) {
+            // do something, when exists user fail login ...
+        } else {
+            // do something, else ...
+        }
         
         $user = $model->getUserIdentity();
         if ($user) {

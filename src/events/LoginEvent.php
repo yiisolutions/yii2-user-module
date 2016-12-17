@@ -11,4 +11,9 @@ class LoginEvent extends Event
      * @var LoginFormInterface
      */
     public $model;
+
+    /**
+     * @var mixed alternative return value for sender
+     */
+    public $return;
 }
