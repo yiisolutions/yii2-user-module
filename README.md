@@ -72,6 +72,8 @@ use yii\web\Controller;
 use yiisolutions\user\actions\LoginAction;
 use yiisolutions\user\actions\LogoutAction;
 use yiisolutions\user\actions\SignUpAction;
+use yiisolutions\user\events\LoginEvent;
+use yiisolutions\user\models\LoginFormInterface;
 
 class AccountController extends Controller
 {
@@ -81,6 +83,8 @@ class AccountController extends Controller
             'login' => [
                 'class' => LoginAction::className(), 
                 'view' => 'login',  // use @app/views/account/login.php view file
+                'on loginSuccess' => [$this, 'onLoginSuccess'], // alternative success callback (default redirect to back)
+                'on loginFailed' => [$this, 'onLoginFailed'], // do something when login failed (for example, logging)
             ],
             'logout' => [
                 'class' => LogoutAction::className(),
@@ -90,6 +94,31 @@ class AccountController extends Controller
             ],
         ];        
     }    
+    
+    /**
+     * Run when login success.
+     * 
+     * @return mixed This value will be returned from LoginAction
+     */
+    public function onLoginSuccess(LoginEvent $event, LoginFormInterface $model)
+    {
+        // do something ...
+        
+        return $this->redirect('/profile');
+    }
+    
+    /**
+     * Run when login error. 
+     */
+    public function onLoginFailed(LoginEvent $event, LoginFormInterface $model)
+    {
+        // do something ...
+        
+        $user = $model->getUserIdentity();
+        if ($user) {
+            // send email notification, increment attempt counter etc ...
+        }
+    }
 }
 
 ```

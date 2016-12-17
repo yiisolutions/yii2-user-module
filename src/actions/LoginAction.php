@@ -6,11 +6,15 @@ use Yii;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
+use yiisolutions\user\events\LoginEvent;
 use yiisolutions\user\models\LoginForm;
 use yiisolutions\user\models\LoginFormInterface;
 
 class LoginAction extends Action
 {
+    const EVENT_LOGIN_SUCCESS = 'loginSuccess';
+    const EVENT_LOGIN_FAILED = 'loginFailed';
+
     /**
      * @var string full name of the model class. This class must implement the interface
      * yiisolutions\user\models\LoginFormInterface and inherit yii\base\Model.
@@ -31,12 +35,6 @@ class LoginAction extends Action
      * closing of browser window.
      */
     public $rememberMeDuration = 3600 * 24 * 30;
-
-    /**
-     * TODO: remove this option, use event model without.
-     * @var \Closure
-     */
-    public $successCallback;
 
     /**
      * @inheritdoc
@@ -69,17 +67,15 @@ class LoginAction extends Action
 
         if ($model->load($data)) {
             if ($model->login(['rememberMeDuration' => $this->rememberMeDuration])) {
-
-                // TODO: use the event model
-                if ($this->successCallback instanceof \Closure) {
-                    return $this->successCallback->__invoke($this, $model);
-                }
+                $this->triggerModelEvent(self::EVENT_LOGIN_SUCCESS, $model);
 
                 return $this->controller->goBack();
             }
         }
 
-        // TODO: use event model when login failed
+        if ($model->hasErrors()) {
+            $this->triggerModelEvent(self::EVENT_LOGIN_FAILED, $model);
+        }
 
         return $this->controller->render($this->view, [
             'model' => $model,
@@ -92,5 +88,16 @@ class LoginAction extends Action
     private function getModel()
     {
         return new $this->modelClass();
+    }
+
+    /**
+     * @param $eventName
+     * @param LoginFormInterface $model
+     */
+    private function triggerModelEvent($eventName, LoginFormInterface $model)
+    {
+        $event = new LoginEvent();
+        $event->model = $model;
+        $this->trigger($eventName, $event);
     }
 }
