@@ -19,10 +19,12 @@ use yii\web\IdentityInterface;
  * @property string $auth_key
  * @property string $password_hash
  * @property string $password_reset_token
+ * @property string $activation_token
  * @property string $email
  * @property string $status
- * @property integer $created_at
- * @property integer $updated_at
+ * @property string $created_at
+ * @property string $updated_at
+ * @property string $deleted_at
  * @property string $password
  */
 class User extends ActiveRecord implements IdentityInterface
@@ -39,6 +41,9 @@ class User extends ActiveRecord implements IdentityInterface
 
     const SCENARIO_COMMAND_CREATE = 'commandCreate';
 
+    /**
+     * @var string raw password
+     */
     private $_password;
 
     /**
@@ -60,6 +65,7 @@ class User extends ActiveRecord implements IdentityInterface
             [['auth_key', 'status'], 'string', 'max' => 32],
             [['auth_key'], 'unique'],
             [['password_reset_token'], 'unique'],
+            [['activation_token'], 'unique'],
             [['status'], 'in', 'range' => self::STATUS_ALL],
             [['email'], 'email'],
             [['username'], 'unique', 'filter' => [
@@ -85,10 +91,12 @@ class User extends ActiveRecord implements IdentityInterface
             'auth_key' => 'Auth Key',
             'password_hash' => 'Password Hash',
             'password_reset_token' => 'Password Reset Token',
+            'activation_token' => 'Activation Token',
             'email' => 'Email',
             'status' => 'Status',
             'created_at' => 'Created At',
             'updated_at' => 'Updated At',
+            'deleted_at' => 'Deleted At',
         ];
     }
 
@@ -114,6 +122,18 @@ class User extends ActiveRecord implements IdentityInterface
                     return $modelEvent->sender->auth_key;
                 },
             ],
+            'activationToken' => [
+                'class' => AttributeBehavior::className(),
+                'attributes' => [
+                    ActiveRecord::EVENT_BEFORE_VALIDATE => 'activation_token',
+                ],
+                'value' => function(ModelEvent $event) {
+                    if (empty($event->sender->activation_token) && $event->sender->status === self::STATUS_NEW) {
+                        return self::generateRandomToken();
+                    }
+                    return $event->sender->activation_token;
+                },
+            ],
         ];
     }
 
@@ -124,6 +144,14 @@ class User extends ActiveRecord implements IdentityInterface
     public static function generatePasswordHash($password)
     {
         return Yii::$app->security->generatePasswordHash($password);
+    }
+
+    /**
+     * @return string
+     */
+    public static function generateRandomToken()
+    {
+        return Yii::$app->security->generateRandomString() . '_' . time();
     }
 
     /**
@@ -172,6 +200,59 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * @param $token
+     * @return null|static
+     */
+    public static function findIdentityByPasswordResetToken($token)
+    {
+        $passwordResetTokenExpire = isset(Yii::$app->params['yiisolutions.user.passwordResetTokenExpire'])
+            ? Yii::$app->params['yiisolutions.user.passwordResetTokenExpire'] : 3600;
+
+        if (!static::isRandomTokenValid($token, $passwordResetTokenExpire)) {
+            return null;
+        }
+
+        return static::findOne([
+            'password_reset_token' => $token,
+            'status' => self::STATUS_ACTIVATED,
+        ]);
+    }
+
+    /**
+     * @param $token
+     * @return null|static
+     */
+    public static function findIdentityByActivationToken($token)
+    {
+        $activationTokenExpire = isset(Yii::$app->params['yiisolutions.user.activationTokenExpire'])
+            ? Yii::$app->params['yiisolutions.user.activationTokenExpire'] : 3600;
+
+        if (!static::isRandomTokenValid($token, $activationTokenExpire)) {
+            return null;
+        }
+
+        return static::findOne([
+            'activation_token' => $token,
+            'status' => self::STATUS_NEW,
+        ]);
+    }
+
+    /**
+     * @param $token
+     * @param $expire
+     * @return bool
+     */
+    public static function isRandomTokenValid($token, $expire)
+    {
+        if (empty($token)) {
+            return false;
+        }
+
+        $timestamp = (int) substr($token, strrpos($token, '_')+1);
+        return $timestamp + $expire >= time();
+    }
+    
+    /**
      * @inheritdoc
      */
     public function getId()
@@ -213,5 +294,31 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->_password = $password;
         $this->password_hash = self::generatePasswordHash($password);
+    }
+
+    public function generatePasswordResetToken()
+    {
+        $this->password_reset_token = self::generateRandomToken();
+    }
+
+    public function generateActivationToken()
+    {
+        $this->activation_token = self::generateRandomToken();
+    }
+
+    public function removePasswordResetToken()
+    {
+        $this->password_reset_token = null;
+    }
+
+    public function removeActivationToken()
+    {
+        $this->activation_token = null;
+    }
+
+    public function softDelete()
+    {
+        $this->status = self::STATUS_DELETED;
+        $this->save(false, ['status', 'deleted_at']);
     }
 }

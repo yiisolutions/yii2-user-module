@@ -29,14 +29,6 @@ class LoginAction extends Action
     public $view = '@yiisolutions/user/views/login';
 
     /**
-     * @var int value for the duration of the user session life. Default is 30 days.
-     * This option is passed to the method login() in $options array and is used if user
-     * has selected "Remember me" checkbox. Otherwise, user session will live up to the
-     * closing of browser window.
-     */
-    public $rememberMeDuration = 3600 * 24 * 30;
-
-    /**
      * @inheritdoc
      */
     public function init()
@@ -65,15 +57,13 @@ class LoginAction extends Action
         $model = $this->getModel();
         $data = Yii::$app->request->post();
 
-        if ($model->load($data)) {
-            if ($model->login(['rememberMeDuration' => $this->rememberMeDuration])) {
-                $return = $this->triggerModelEvent(self::EVENT_LOGIN_SUCCESS, $model);
-                if ($return !== null) {
-                    return $return;
-                }
-
-                return $this->controller->goBack();
+        if ($model->load($data) && $model->login()) {
+            $return = $this->triggerModelEvent(self::EVENT_LOGIN_SUCCESS, $model);
+            if ($return !== null) {
+                return $return;
             }
+
+            return $this->controller->goBack();
         }
 
         if ($model->hasErrors()) {

@@ -13,6 +13,6 @@ class LogoutAction extends Action
             Yii::$app->user->logout();
         }
 
-        return $this->controller->goBack(Yii::$app->defaultRoute);
+        return $this->controller->goBack();
     }
 }

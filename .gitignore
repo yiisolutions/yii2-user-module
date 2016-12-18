@@ -1,4 +1,5 @@
 .idea/
 phpunit.xml
 coverage.xml
+coverage-html
 vendor/

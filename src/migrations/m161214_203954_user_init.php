@@ -19,14 +19,17 @@ class m161214_203954_user_init extends Migration
             'auth_key' => $this->string(32)->notNull()->unique(),
             'password_hash' => $this->string()->notNull(),
             'password_reset_token' => $this->string()->unique(),
+            'activation_token' => $this->string()->unique(),
             'email' => $this->string()->notNull(),
             'status' => $this->string(32)->notNull()->defaultValue(User::STATUS_NEW),
             'created_at' => $this->timestamp()->notNull(),
             'updated_at' => $this->timestamp()->defaultValue(null),
+            'deleted_at' => $this->timestamp()->defaultValue(null),
         ], $tableOptions);
 
         $this->createIndex('idx-user-username', '{{%user}}', 'username');
         $this->createIndex('idx-user-email', '{{%user}}', 'email');
+        $this->createIndex('idx-user-activation_token', '{{%user}}', 'activation_token');
     }
 
     public function safeDown()

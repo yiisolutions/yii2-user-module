@@ -38,6 +38,10 @@ class SignUpForm extends Model implements SignUpFormInterface
      */
     public function signUp()
     {
+        if (!$this->validate()) {
+            return false;
+        }
+
         $user = new User();
         $user->username = $this->username;
         $user->email = $this->email;

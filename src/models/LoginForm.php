@@ -60,13 +60,14 @@ class LoginForm extends Model implements LoginFormInterface
     /**
      * @inheritdoc
      */
-    public function login(array $options = [])
+    public function login()
     {
         if (!$this->validate()) {
             return false;
         }
 
-        $rememberMeDuration = isset($options['rememberMeDuration']) ? $options['rememberMeDuration'] : 3600 * 24 * 30;
+        $rememberMeDuration = isset(Yii::$app->params['yiisolutions.user.rememberMeDuration'])
+            ? Yii::$app->params['yiisolutions.user.rememberMeDuration'] : 3600 * 24 * 30;
 
         return Yii::$app->user->login($this->getUserIdentity(), $this->remember_me  ? $rememberMeDuration : 0);
     }

@@ -19,5 +19,5 @@ interface LoginFormInterface
      * @param array $options
      * @return bool
      */
-    public function login(array $options = []);
+    public function login();
 }
