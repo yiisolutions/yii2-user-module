@@ -9,7 +9,7 @@ interface LoginFormInterface
     /**
      * This method should return user identity model or false if not found.
      *
-     * @return IdentityInterface|false
+     * @return IdentityInterface|User|false
      */
     public function getUserIdentity();
 

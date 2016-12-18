@@ -41,9 +41,7 @@ class LoginForm extends Model implements LoginFormInterface
     }
 
     /**
-     * This method should return user identity model or false if not found.
-     *
-     * @return IdentityInterface|false
+     * @inheritdoc
      */
     public function getUserIdentity()
     {

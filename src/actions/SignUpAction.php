@@ -5,6 +5,7 @@ namespace yiisolutions\user\actions;
 use Yii;
 use yii\base\Action;
 use yii\base\Model;
+use yii\helpers\Url;
 use yiisolutions\user\events\SignUpEvent;
 use yiisolutions\user\models\SignUpFormInterface;
 
@@ -12,6 +13,7 @@ class SignUpAction extends Action
 {
     const EVENT_SIGN_UP_SUCCESS = 'signUpSuccess';
     const EVENT_SIGN_UP_FAILED = 'signUpFailed';
+    const EVENT_ACTIVATION_EMAIL_SEND_FAILED = 'activationEmailSendFailed';
 
     /**
      * @var string full name of the model class. This class must implement the interface
@@ -25,6 +27,24 @@ class SignUpAction extends Action
      * in the $modelClass.
      */
     public $view = '@yiisolutions/user/views/sign-up';
+
+    /**
+     * @var string activation url. If not set activation will be disable.
+     */
+    public $activationRouteName;
+
+    /**
+     * @var string
+     */
+    public $activationRouteParamName = 'token';
+
+    /**
+     * @var array
+     */
+    public $activationMailView = [
+        'html' => '@yiisolutions/user/mail/user-activation-html',
+        'text' => '@yiisolutions/user/mail/user-activation-text',
+    ];
 
     /**
      * @inheritdoc
@@ -55,6 +75,11 @@ class SignUpAction extends Action
         $model = $this->getModel();
 
         if ($model->load(Yii::$app->request->post()) && $model->signUp()) {
+
+            if (!empty($this->activationRouteName)) {
+                $this->sendActivationEmail($model);
+            }
+
             $return = $this->triggerModelEvent(self::EVENT_SIGN_UP_SUCCESS, $model);
             if ($return !== null) {
                 return $return;
@@ -93,5 +118,36 @@ class SignUpAction extends Action
         $this->trigger($eventName, $event);
 
         return $event->return;
+    }
+
+    private function sendActivationEmail(SignUpFormInterface $model)
+    {
+        $user = $model->getUserIdentity();
+        $message = Yii::$app->mailer->compose($this->activationMailView, [
+            'model' => $user,
+            'activationUrl' => [
+                $this->activationRouteName,
+                $this->activationRouteParamName => $user->activation_token,
+            ],
+        ]);
+
+        $fromEmail = isset(Yii::$app->params['yiisolutions.user.activationEmail.from'])
+            ? Yii::$app->params['yiisolutions.user.activationEmail.from'] : null;
+        if (!empty($fromEmail)) {
+            $message->setFrom($fromEmail);
+        }
+
+        $message->setTo($user->email);
+
+        $subject = isset(Yii::$app->params['yiisolutions.user.activationEmail.subject'])
+            ? Yii::$app->params['yiisolutions.user.activationEmail.subject'] : null;
+
+        if (!empty($subject)) {
+            $message->setSubject($subject);
+        }
+
+        if (!$message->send()) {
+            $this->triggerModelEvent(self::EVENT_ACTIVATION_EMAIL_SEND_FAILED, $model);
+        }
     }
 }

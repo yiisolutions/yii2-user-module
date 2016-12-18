@@ -128,7 +128,7 @@ class User extends ActiveRecord implements IdentityInterface
                     ActiveRecord::EVENT_BEFORE_VALIDATE => 'activation_token',
                 ],
                 'value' => function(ModelEvent $event) {
-                    if (empty($event->sender->activation_token) && $event->sender->status === self::STATUS_NEW) {
+                    if (empty($event->sender->activation_token) && (empty($event->sender->status) || $event->sender->status === self::STATUS_NEW)) {
                         return self::generateRandomToken();
                     }
                     return $event->sender->activation_token;

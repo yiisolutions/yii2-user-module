@@ -3,6 +3,8 @@
 namespace yiisolutions\user;
 
 use Yii;
+use yii\base\Application;
+use yii\base\BootstrapInterface;
 use yii\console\Application as ConsoleApplication;
 use yii\base\Module as BaseModule;
 

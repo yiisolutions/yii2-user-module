@@ -4,6 +4,7 @@ namespace yiisolutions\user\models;
 
 use Yii;
 use yii\base\Model;
+use yii\web\IdentityInterface;
 
 class SignUpForm extends Model implements SignUpFormInterface
 {
@@ -11,6 +12,11 @@ class SignUpForm extends Model implements SignUpFormInterface
     public $password;
     public $password_repeat;
     public $email;
+
+    /**
+     * @var User|IdentityInterface
+     */
+    private $_userIdentity;
 
     /**
      * @inheritdoc
@@ -32,22 +38,32 @@ class SignUpForm extends Model implements SignUpFormInterface
     }
 
     /**
-     * This method start sign of a new user.
-     *
-     * @return boolean
+     * @inheritdoc
+     */
+    public function getUserIdentity()
+    {
+        if ($this->_userIdentity === null) {
+            $user = new User();
+            $user->username = $this->username;
+            $user->email = $this->email;
+            $user->password = $this->password;
+
+            if ($user->save()) {
+                $this->_userIdentity = $user;
+            } else {
+                $this->_userIdentity = false;
+            }
+        }
+
+        return $this->_userIdentity;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function signUp()
     {
-        if (!$this->validate()) {
-            return false;
-        }
-
-        $user = new User();
-        $user->username = $this->username;
-        $user->email = $this->email;
-        $user->password = $this->password;
-
-        if (!$user->save()) {
+        if (!$this->validate() || !$this->getUserIdentity()) {
             return false;
         }
 
