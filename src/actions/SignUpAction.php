@@ -4,8 +4,8 @@ namespace yiisolutions\user\actions;
 
 use Yii;
 use yii\base\Action;
+use yii\base\InvalidConfigException;
 use yii\base\Model;
-use yii\helpers\Url;
 use yiisolutions\user\events\SignUpEvent;
 use yiisolutions\user\models\SignUpFormInterface;
 

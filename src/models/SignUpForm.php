@@ -51,6 +51,15 @@ class SignUpForm extends Model implements SignUpFormInterface
             if ($user->save()) {
                 $this->_userIdentity = $user;
             } else {
+                if ($user->hasErrors()) {
+                    foreach ($user->getErrors() as $attribute => $errors) {
+                        if (property_exists($this, $attribute)) {
+                            foreach ($errors as $error) {
+                                $this->addError($attribute, $error);
+                            }
+                        }
+                    }
+                }
                 $this->_userIdentity = false;
             }
         }
