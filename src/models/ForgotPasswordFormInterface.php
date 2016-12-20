@@ -4,7 +4,7 @@ namespace yiisolutions\user\models;
 
 use yii\web\IdentityInterface;
 
-interface LoginFormInterface
+interface ForgotPasswordFormInterface
 {
     /**
      * This method should return user identity model or false if not found.
@@ -13,10 +13,5 @@ interface LoginFormInterface
      */
     public function getUserIdentity();
 
-    /**
-     * This method execute login process and return success of operation.
-     *
-     * @return bool
-     */
-    public function login();
+    public function forgotPassword();
 }

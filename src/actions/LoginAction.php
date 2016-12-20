@@ -29,6 +29,11 @@ class LoginAction extends Action
     public $view = '@yiisolutions/user/views/login';
 
     /**
+     * @var string
+     */
+    public $forgotPasswordRouteName;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -72,6 +77,7 @@ class LoginAction extends Action
 
         return $this->controller->render($this->view, [
             'model' => $model,
+            'forgotPasswordUrl' => $this->forgotPasswordRouteName ? [$this->forgotPasswordRouteName] : null,
         ]);
     }
 
