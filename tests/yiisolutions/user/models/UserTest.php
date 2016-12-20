@@ -167,6 +167,52 @@ class UserTest extends \PHPUnit_Framework_TestCase
         User::findIdentityByAccessToken('token');
     }
 
+    public function testGenerateActivationToken()
+    {
+        $model = new User();
+
+        $this->assertEmpty($model->activation_token);
+
+        $model->generateActivationToken();
+
+        $this->assertNotEmpty($model->activation_token);
+    }
+
+    public function testGeneratePasswordResetToken()
+    {
+        $model = new User();
+
+        $this->assertEmpty($model->password_reset_token);
+
+        $model->generatePasswordResetToken();
+
+        $this->assertNotEmpty($model->password_reset_token);
+    }
+
+    public function testRemoveActivationToken()
+    {
+        $model = new User();
+        $model->generateActivationToken();
+
+        $this->assertNotEmpty($model->activation_token);
+
+        $model->removeActivationToken();
+
+        $this->assertEmpty($model->activation_token);
+    }
+
+    public function testRemovePasswordResetToken()
+    {
+        $model = new User();
+        $model->generatePasswordResetToken();
+
+        $this->assertNotEmpty($model->password_reset_token);
+
+        $model->removePasswordResetToken();
+
+        $this->assertEmpty($model->password_reset_token);
+    }
+
     public function findIdentityByUsernameDataProvider()
     {
         return [
